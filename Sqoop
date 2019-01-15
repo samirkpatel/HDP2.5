@@ -1,0 +1,151 @@
+SQOOP:
+
+SQOOP is written in java and it makes use of JDBC to connect.
+
+- Sqoop is used to import and export data from HDFS-RDBMS
+- It can also import data to HIVE TABLES.
+- By default it uses 4 mapper.
+- Data will be devided with mappers using split column(Primary command) in DB.
+- Sqoop will internally run SQL queries and fetches the data.
+
+
+Tools:
+- import
+- import-all-tables
+- export
+- eval
+- options-file
+- list-tables
+- list-databases
+
+
+Import Data to HIVE table.
+-create-hive-table 
+
+____________________________________________________________________________________
+
+- import: is used for importing individual table from a DB.
+- import-all-tables : for importing all the table of a DB.
+- export: is used for exporting individual table.
+- eval: is used to run a SQL query using sqoop.
+- options-file: it is used to provide a option file with commands written inside.
+		so that we dont need to write those in our commands every time.
+- list-tables: This is tool is used to list the tables in a DB.
+- list-databases: List all the database availble in a DB.
+
+------------------------------------------------------------------------------------------------------
+
+Note: Subcommands will starts from -- and general commands starts with -
+
+Sqoop import command: 
+
+
+Importing a Table to HDFS with no Specific location mentioned:
+- sqoop import --connect jdbc:mysql://SQLservername:3306/dbname --username uname -P --table tablename -m 1
+
+
+
+Importing a Table to HDFS to a target directory:
+- sqoop import --connect jdbc:mysql://SQLservername:3306/dbname --username uname \
+  -P --table tablename --target-dir /user/HDFS/ -m 1
+
+
+
+Importing a part of table with condition:
+- sqoop import --connect jdbc:mysql://SQLservername:3306/dbname --username uname -P --table tablename \
+  --where "emp_id='5'" --target-dir /user/hdfs --m 1
+
+
+
+Sqoop Incremental Import:
+- sqoop import --connect jdbc:mysql://localhost:3306/userdb --username root \
+  --table emp --m 1 --incremental append --check-column id -last value 1205
+
+
+________________________________________________________________________________________________________
+
+Importing All Tables Of a DB:
+
+
+- sqoop import-all-tables --connect jdbc:mysql://localhost:3306/employee --username uname --password 
+
+________________________________________________________________________________________________________
+
+
+Sqoop Export:
+
+This tool is used to export data back from the HDFS to the RDBMS databases.
+
+Syntax:
+
+$ sqoop export (generic-args) (export-args) 
+$ sqoop-export (generic-args) (export-args)
+
+
+
+Notes:  
+- The target table must exist in the target database
+- It is mandatory that the table to be exported is created manually and 
+  is present in the database from where it has to be exported.
+
+Sample Query to Create a table in Mysql called Employee
+
+mysql
+mysql> USE db;
+mysql> CREATE TABLE employee ( 
+   id INT NOT NULL PRIMARY KEY, 
+   name VARCHAR(20), 
+   deg VARCHAR(20),
+   salary INT,
+   dept VARCHAR(10));
+
+Once the table is created we can run Sqoop export to insert data in to the table from Hdfs file.
+
+
+The following command is used to export the table data (which is in emp_data file on HDFS) 
+to the employee table in db database of Mysql database server.
+
+sqoop export --connect jdbc:mysql://localhost/db --username root --table employee \
+--export-dir /emp/emp_data
+
+
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+
+Sqoop - Jobs
+
+This chapter describes how to create and maintain the Sqoop jobs. Sqoop job creates and 
+saves the import and export commands. It specifies parameters to identify and recall the
+saved job.This re-calling or re-executing is used in the incremental import, which can
+import the updated rows from RDBMS table to HDFS.
+
+
+Syntax:
+
+$ sqoop job (generic-args) (job-args)
+   [-- [subtool-name] (subtool-args)]
+
+$ sqoop-job (generic-args) (job-args)
+   [-- [subtool-name] (subtool-args)]
+
+--------------------------------------------------------------------------------------
+
+Create Job (--create):
+
+sqoop job --create myjob -- import --connect jdbc:mysql://localhost/db \
+--username root --table employee --m 1
+
+
+Verify Job (--list):
+
+sqoop job --list
+
+
+Inspect Job (--show):
+sqoop job --show myjob
+
+
+Execute Job (--exec):
+sqoop job --exec myjob
+
+---------------------------------------------------------------------------------------
